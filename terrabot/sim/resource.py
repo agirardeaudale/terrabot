@@ -96,7 +96,8 @@ class PowerBowlState:
 
     def get_available_capacity(self):
         """how much more power could be gained"""
-        return 2 * self.bowl_one + self.bowl_two
+        num_tokesn = self.get_num_tokens()
+        return 2 * (num_tokens - self.bowl_one) + (num_tokens - self.bowl_two)
 
 
 @dataclass
