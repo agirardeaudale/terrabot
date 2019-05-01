@@ -1,5 +1,5 @@
-Welcome to terrabot's documentation!
-======================================
+terrabot documentation!
+=======================
 
 .. toctree::
    :maxdepth: 2

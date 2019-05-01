@@ -4,10 +4,10 @@ terrabot package
 Submodules
 ----------
 
-terrabot.terrabot module
-------------------------
+terrabot.util module
+--------------------
 
-.. automodule:: terrabot.terrabot
+.. automodule:: terrabot.util
     :members:
     :undoc-members:
     :show-inheritance:
