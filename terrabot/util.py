@@ -1,8 +1,16 @@
-from random import sample
+from types import MappingProxyType
 from itertools import chain
+from random import sample
 
 def shuffled(seq):
     return sample(seq, k=len(seq))
+
+def frozendict_with_item(mapping: MappingProxyType, key: Any, value: Any):
+    return frozendict({k: v for k, v in mapping.items + (key, value)})
+
+def tuple_replace(tuple_: Tuple, index: int, value: Any) -> Tuple:
+    return tuple_[:index] + (value,) + tuple_[index + 1]
+
 
 #def flatten(nested_iterable: Iterable[Iterable[Any]]):
 #    """Flatten a nested Iterable.

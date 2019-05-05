@@ -4,7 +4,8 @@ from typing import Tuple
 from terrabot.sim.cult import CultDelta, PlayerCultState
 from terrabot.sim.event import EventTrigger
 from terrabot.sim.map import Terrain
-from terrabot.sim.resource import ResourceDelta, PlayerResourceState
+from terrabot.sim.resource import ResourceDelta, PlayerResourceState, _DEFAULT_CONVERSION_RATES,
+        LeechOpportunity
 from terrabot.sim.structure import PlayerStructureState
 from terrabot.sim.tile import Tile, TileSet
 
@@ -18,7 +19,7 @@ class PlayerState:
     cult_state: PlayerCultState = PlayerCultState()
     has_passed: bool = False
 
-    leech_decisions: Tuple[int, ...] = ()
+    leech_opportunities: Tuple[LeechOpportunity, ...] = ()
 
     # Cultists. Number of free cult steps the player has to spend.
     cultist_steps: int = 0
@@ -58,6 +59,9 @@ class Faction:
     stronghold_income: ResourceDelta = ResourceDelta(power=2)
     sanctuary_income: ResourceDelta = ResourceDelta(priests=1)
 
+    # Alchemists
+    resource_conversion_rates: frozendict = _DEFAULT_CONVERSION_RATES
+
     # Chaos Magicians
     place_last: bool = False
 
@@ -69,6 +73,9 @@ class Faction:
         return ResourceDelta(workers=default_cost_workers)
 
     def get_special_actions(self, player_state: PlayerState) -> Tuple[str, ...]:
+        """Returns special actions available to the player even if they have been used this round,
+        but not if they haven't been unlocked by e.g. building a stronghold.
+        """
         return ()
 
     def get_event_triggers(self, player_state: PlayerState) -> Tuple[EventTrigger, ...]:
@@ -99,4 +106,13 @@ class Player:
     @staticmethod
     def create_player_id(initial_turn_position: int) -> str:
         return f"player{initial_turn_position}"
+
+    def update_structures(self, new_structures: PlayerStructureState) -> "Player":
+        return self.replace(player_state = self.player_state.replace(structures = new_structures)
+
+    def update_resources(self, new_resources: PlayerResourceState) -> "Player":
+        return self.replace(player_state = self.player_state.replace(resources = new_resources)
+
+    def update_cult(self, new_cult: PlayerCultState) -> "Player":
+        return self.replace(player_state = self.player_state.replace(cult_state = new_cult)
 

@@ -9,7 +9,7 @@ from frozendict import frozendict
 from terrabot.sim.cult import CultDelta
 from terrabot.sim.map import Terrain
 from terrabot.sim.player import Faction
-from terrabot.sim.resource import ResourceDelta, Conversion
+from terrabot.sim.resource import ResourceDelta, Conversion, LeechOpportunity
 from terrabot.sim.structure import Structure
 from terrabot.sim.tile import Tile
 
@@ -43,7 +43,7 @@ class Step:
     returned_tile: Tile = None
     cult_delta: CultDelta = CultDelta()
 
-    new_leech_decisions: frozendict = frozendict() # map by player_id
+    new_leech_opportunities: frozendict = frozendict() # map by player_id
     new_cultist_steps: frozendict = frozendict() # map by player_id
     new_town_tile_decisions: int = 0
     new_favor_tile_decisions: int = 0
@@ -66,9 +66,7 @@ class ActionExecution(ABC):
     cost: ResourceDelta
 
     #@abstractmethod
-    def compute(self,
-            conversions: Tuple[Conversion, ...],
-            game_state: 'GameState') -> Step:
+    def compute(self, game_state: 'GameState') -> Step:
         raise NotImplementedError
 
 
@@ -147,7 +145,7 @@ class TileSlotAction(Action):
     pass
 
 #------------------------------------
-# Non-Turn Actions
+# Off-Turn Actions
 @dataclass
 class OffTurnAction(Action):
     phase: Phase

@@ -1,7 +1,14 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from fractions import Fraction
 from typing import Tuple
+
+class ResourceType(Enum):
+    COINS = auto()
+    WORKERS = auto()
+    PRIESTS = auto()
+    POWER = auto()
+    POINTS = auto()
+
 
 @dataclass
 class ResourceDelta:
@@ -11,16 +18,66 @@ class ResourceDelta:
     power: int = 0
     victory_points: int = 0
 
-    # TODO: arithmetic operators, especially __neg__
+    def add_by_type(self, amount: int, resource_type: ResourceType):
+        if resource_type == ResourceType.COINS:
+            return ResourceDelta(coins = self.coins + amount)
+        elif resource_type == ResourceType.WORKERS:
+            return ResourceDelta(workers = self.workers + amount)
+        elif resource_type == ResourceType.PRIESTS:
+            return ResourceDelta(priests = self.priests + amount)
+        elif resource_type == ResourceType.POWER:
+            return ResourceDelta(power = self.power + amount)
+        elif resource_type == ResourceType.POINTS:
+            return ResourceDelta(victory_points = self.victory_points + amount)
+        else:
+            raise AssertionError(f"Unrecognized ResourceType {resource_type}.")
+
+    def __repr__(self):
+        changes = []
+        if self.coins:
+            changes.append(f"{self.coins}C")
+        if self.workers:
+            changes.append(f"{self.workers}W")
+        if self.priests:
+            changes.append(f"{self.priests}P")
+        if self.power:
+            changes.append(f"{self.power}PW")
+        if self.victory_points:
+            changes.append(f"{self.victory_points}VP")
+        return return f"({changes.join(", ")})"
+
+    def __add__(self, other: "ResourceDelta") -> "ResourceDelta":
+        coins = self.coins + other.coins
+        workers = self.workers + other.workers
+        priests = self.priests + other.priests
+        power = self.power + other.power
+        victory_points = self.victory_points + other.victory_points
+        return ResourceDelta(coins, workers, priests, power, victory_points)
+
+    def __sub__(self, other: "ResourceDelta") -> "ResourceDelta":
+        coins = self.coins - other.coins
+        workers = self.workers - other.workers
+        priests = self.priests - other.priests
+        power = self.power - other.power
+        victory_points = self.victory_points - other.victory_points
+        return ResourceDelta(coins, workers, priests, power, victory_points)
+
+    def __neg__(self) -> "ResourceDelta":
+        coins = -self.coins
+        workers = -self.workers
+        priests = -self.priests
+        power = -self.power
+        victory_points = -self.victory_points
+        return ResourceDelta(coins, workers, priests, power, victory_points)
 
 
-@dataclass
-class ResourceType:
-    COINS = auto()
-    WORKERS = auto()
-    PRIESTS = auto()
-    POWER = auto()
-    POINTS = auto()
+_DEFAULT_CONVERSION_RATES = frozendict({
+    (ResourceType.POWER, ResourceType.PRIESTS): 5,
+    (ResourceType.POWER, ResourceType.WORKERS): 3,
+    (ResourceType.POWER, ResourceType.COINS): 1,
+    (ResourceType.PRIESTS, ResourceType.WORKERS): 1,
+    (ResourceType.PRIESTS, ResourceType.COINS): 1,
+    (ResourceType.WORKERS, ResourceType.COINS): 1,
 
 
 @dataclass
@@ -35,11 +92,30 @@ class Conversion:
     #   W ->
     #       C
     # Alchemists:
-    #   VP <--> C
+    #   VP ->
+    #       C
     from_: ResourceType
     to: ResourceType
-    quantity: int
-    rate: Fraction
+    quantity_produced: int
+
+    def get_resource_delta(self, faction: "Faction"):
+        rate = Conversion.get_rate(self.from_, self.to, faction)
+        quantity_spent = quantity_produced * rate
+        return ResourceDelta() \
+                .add_by_type(-from_ * quantity_spent) \
+                .add_by_type(to * quantity_produced)
+
+    @staticmethod
+    def get_rate(from_: ResourceType, to: ResourceType, faction: "Faction" = None) -> int:
+        if faction:
+            rate_map = faction.resource_conversion_rates
+        else:
+            rate_map = _DEFAULT_CONVERSION_RATES
+
+        try:
+            return rate_map[(from_, to)]
+        except KeyError:
+            raise ValueError(f"No available conversion from {from_} to {to}")
 
 
 @dataclass
@@ -108,7 +184,7 @@ class PlayerResourceState:
     priest_pool_size: int = 7
     power: PowerBowlState = PowerBowlState()
 
-    def gain(self, resources: ResourceDelta) -> PowerBowlState:
+    def add(self, resources: ResourceDelta) -> "PlayerResourceState":
         coins = self.coins + resources.coins
         workers = self.workers + resources.workers
         priests = self.priests + resources.priests
@@ -119,7 +195,7 @@ class PlayerResourceState:
                 priests = priests,
                 power = power)
 
-    def spend(self, resources: ResourceDelta) -> PowerBowlState:
+    def subtract(self, resources: ResourceDelta) -> "PlayerResourceState":
         coins = self.coins - resources.coins
         workers = self.workers - resources.workers
         priests = self.priests - resources.priests
@@ -130,10 +206,24 @@ class PlayerResourceState:
                 priests = priests,
                 power = power)
 
+    def are_quantities_nonnegative(self) -> bool:
+        # TODO
+        pass
+
     def could_afford(self, cost: ResourceDelta) -> Tuple[bool, Tuple[Conversion, ...]]:
         # TODO
-        # Actually this method might be a bad idea, since there are often there are many possible
+        # Actually this method might be a bad idea, since often there are many possible
         # ways one could convert resources to meet a cost (i.e., PW->C, P->C, W->C, VP->C)
         return (True, None)
+
+
+@dataclass
+class LeechOpportunity:
+    amount: int
+    from_player_id: str
+
+    def get_resource_delta(self, available_capacity: int):
+
+
 
 
