@@ -67,13 +67,18 @@ FACTION_SPECIAL_ACTIONS = ( )
 SPECIAL_ACTIONS = TILE_SLOT_ACTIONS + FACTION_SPECIAL_ACTIONS
 
 OFF_TURN_ACTIONS = ( )
-OFF_TURN_ACTION_LOOKUP_BY_PHASE = frozendict({x.phase: x for x in OFF_TURN_ACTIONS})
 
 ALL_ACTIONS = STANDARD_ACTIONS + POWER_ACTIONS + SPECIAL_ACTIONS + OFF_TURN_ACTIONS
+
 
 _ACTION_LOOKUP_BY_ID = frozendict({x.action_id: x for x in ALL_ACTIONS})
 def get_action_by_id(action_id: str) -> Action:
     return _ACTION_LOOKUP_BY_ID[action_id]
+
+_OFF_TURN_ACTION_LOOKUP_BY_PHASE = frozendict({x.phase: x for x in OFF_TURN_ACTIONS})
+def get_off_turn_action_by_phase(phase: Phase) -> Action:
+    return _OFF_TURN_ACTION_LOOKUP_BY_PHASE[phase]
+
 
 
 # Actions/Options:
