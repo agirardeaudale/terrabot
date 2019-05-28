@@ -18,6 +18,19 @@ from terrabot.sim.resource import ResourceDelta, Conversion
 from terrabot.util import shuffled
 
 @dataclass
+class RuleSet:
+    require_immediate_leech: bool = False
+
+    # Cultists must decide whether to
+    require_immediate_cultist: bool = True
+
+    # Whether to exclude the spade bonus round tile in rounds 5 and 6
+    exclude_late_spade_bonus: bool = True
+
+    # Whether to include town-tiles from the mini-expansion
+
+
+@dataclass
 class Setup:
     round_tiles: Tuple[Tile, Tile, Tile, Tile, Tile, Tile]
     bonus_tiles: Tuple[Tile, ...]
